@@ -54,7 +54,7 @@ export const handler = async (event) => {
     }
 
     // Verificar si el usuario está activo
-    if (user.status !== 'active') {
+    if (user.status === 'inactive') {
       return forbidden('Cuenta inactiva. Contacta al administrador');
     }
 
