@@ -8,7 +8,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 const s3Client = new S3Client({});
 
 // Bucket desde variable de entorno
-const IMAGES_BUCKET = process.env.IMAGES_BUCKET;
+const IMAGES_BUCKET = dev-incident-images-bucket;
 
 // Configuración
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
