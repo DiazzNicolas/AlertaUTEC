@@ -1,6 +1,9 @@
 org: nicolasdiaz
 service: incident-management-system
 
+plugins:
+  - serverless-python-requirements
+
 provider:
   name: aws
   runtime: python3.13
@@ -422,13 +425,10 @@ resources:
 
 custom:
   pythonRequirements:
-    dockerizePip: true
+    dockerizePip: true   # Usar Docker porque tienes runtime python3.13
     layer: true
-    slim: true
-    strip: false
     zip: true
-    usePipenv: false
-    usePoetry: false
+    slim: false
 
 outputs:
   WebsocketEndpoint:
