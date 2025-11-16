@@ -1,114 +1,90 @@
 /**
- * Lambda function: Manejar rutas por defecto WebSocket
+ * Lambda: Manejar mensajes WebSocket
  * Route: $default
- * Captura cualquier mensaje que no tenga una ruta específica
  */
 
-export const handler = async (event, context) => {
+import { ApiGatewayManagementApiClient, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
+
+const WEBSOCKET_ENDPOINT = process.env.WEBSOCKET_ENDPOINT;
+
+/**
+ * Handler principal para mensajes WebSocket ($default)
+ * 
+ * Maneja todos los mensajes que no coinciden con otras rutas específicas
+ */
+export const handler = async (event) => {
   try {
+    console.log('=== WEBSOCKET $DEFAULT ===');
+    console.log('Event:', JSON.stringify(event, null, 2));
+
     const connectionId = event.requestContext.connectionId;
-    const routeKey = event.requestContext.routeKey || "$default";
+    const body = event.body ? JSON.parse(event.body) : {};
 
-    console.log(`Default route called - Connection: ${connectionId}, Route: ${routeKey}`);
+    console.log('Message from:', connectionId);
+    console.log('Body:', body);
 
-    // Intentar parsear el body
-    let body = {};
+    // Parsear el mensaje
+    const action = body.action || 'unknown';
+    
+    let response;
 
-    if (event.body) {
-      try {
-        body = JSON.parse(event.body);
-      } catch (err) {
-        console.log("Invalid JSON in body:", event.body);
-      }
+    switch (action) {
+      case 'ping':
+        response = {
+          type: 'pong',
+          message: 'WebSocket activo',
+          timestamp: Date.now()
+        };
+        break;
+
+      case 'echo':
+        response = {
+          type: 'echo',
+          data: body.data,
+          timestamp: Date.now()
+        };
+        break;
+
+      default:
+        response = {
+          type: 'error',
+          message: `Acción desconocida: ${action}`,
+          availableActions: ['ping', 'echo'],
+          timestamp: Date.now()
+        };
     }
 
-    const action = body.action || "unknown";
+    // Enviar respuesta al cliente
+    const endpoint = WEBSOCKET_ENDPOINT.replace('wss://', 'https://');
+    const apiGateway = new ApiGatewayManagementApiClient({
+      endpoint
+    });
 
-    console.log("Action received:", action);
-    console.log("Body:", JSON.stringify(body));
+    await apiGateway.send(
+      new PostToConnectionCommand({
+        ConnectionId: connectionId,
+        Data: JSON.stringify(response)
+      })
+    );
 
-    // Si quisieras manejar acciones específicas, puedes hacerlo aquí
+    console.log('✅ Respuesta enviada');
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        message: "Message received",
-        action,
-      }),
+      body: JSON.stringify({ message: 'Message processed' })
     };
 
   } catch (err) {
-    console.error("Error en default handler:", err);
+    console.error('=== ERROR EN $DEFAULT ===');
+    console.error('Error:', err.message);
+    console.error('Stack:', err.stack);
 
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Internal Server Error" }),
+      body: JSON.stringify({ 
+        message: 'Error processing message',
+        error: err.message
+      })
     };
   }
 };
-
-
-
-// """
-// Lambda function: Manejar rutas por defecto de WebSocket
-// Route: $default
-// Captura cualquier mensaje que no tenga una ruta específica
-// """
-// import json
-// from typing import Dict, Any
-
-
-// def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-//     """
-//     Maneja mensajes WebSocket que no coinciden con ninguna ruta específica
-    
-//     Event structure:
-//     {
-//         "requestContext": {
-//             "connectionId": "abc123xyz",
-//             "routeKey": "$default"
-//         },
-//         "body": "{\"action\": \"unknown\"}"
-//     }
-    
-//     Response:
-//     - 200: Mensaje procesado (o ignorado)
-//     """
-//     try:
-//         connection_id = event['requestContext']['connectionId']
-//         route_key = event['requestContext'].get('routeKey', '$default')
-        
-//         print(f"Default route called - Connection: {connection_id}, Route: {route_key}")
-        
-//         # Parsear body si existe
-//         body = {}
-//         if event.get('body'):
-//             try:
-//                 body = json.loads(event['body'])
-//             except json.JSONDecodeError:
-//                 print(f"Invalid JSON in body: {event['body']}")
-        
-//         action = body.get('action', 'unknown')
-        
-//         print(f"Action received: {action}")
-//         print(f"Body: {json.dumps(body)}")
-        
-//         # Log para debugging
-//         # En producción podrías manejar acciones específicas aquí
-        
-//         return {
-//             'statusCode': 200,
-//             'body': json.dumps({
-//                 'message': 'Message received',
-//                 'action': action
-//             })
-//         }
-    
-//     except Exception as e:
-//         print(f"Error en default handler: {str(e)}")
-//         import traceback
-//         traceback.print_exc()
-//         return {
-//             'statusCode': 500,
-//             'body': json.dumps({'error': 'Internal Server Error'})
-//         }

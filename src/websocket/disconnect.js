@@ -1,147 +1,53 @@
 /**
- * Lambda function: Manejar desconexiones WebSocket
+ * Lambda: Manejar desconexiones WebSocket
  * Route: $disconnect
  */
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import {
-  DynamoDBDocumentClient,
-  DeleteCommand,
-  GetCommand
-} from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 const CONNECTIONS_TABLE = process.env.CONNECTIONS_TABLE;
 
-/* ============================================================
-   HANDLER PRINCIPAL ($disconnect)
-   ============================================================*/
-export const handler = async (event, context) => {
+/**
+ * Handler principal para desconexiones WebSocket ($disconnect)
+ * 
+ * Elimina la conexión de la tabla de DynamoDB cuando el cliente se desconecta
+ */
+export const handler = async (event) => {
   try {
+    console.log('=== WEBSOCKET $DISCONNECT ===');
+
     const connectionId = event.requestContext.connectionId;
+    console.log('Desconectando:', connectionId);
 
-    console.log("Desconexión WebSocket:", connectionId);
-
-    // 1. Obtener conexión antes de eliminar, para logs
-    let connectionData = null;
-
-    try {
-      const result = await ddb.send(
-        new GetCommand({
-          TableName: CONNECTIONS_TABLE,
-          Key: { connectionId }
-        })
-      );
-      connectionData = result.Item;
-    } catch (err) {
-      console.log("Error obteniendo conexión:", err.message);
-    }
-
-    if (connectionData) {
-      const userId = connectionData.userId;
-      const role = connectionData.role;
-
-      console.log(`Desconectando usuario: ${userId} (${role})`);
-    } else {
-      console.log(`Conexión ${connectionId} no encontrada en DynamoDB`);
-    }
-
-    // 2. Eliminar conexión de DynamoDB
+    // Eliminar conexión de DynamoDB
     await ddb.send(
       new DeleteCommand({
         TableName: CONNECTIONS_TABLE,
-        Key: { connectionId }
+        Key: {
+          connectionId
+        }
       })
     );
 
-    console.log(`Conexión eliminada: ${connectionId}`);
+    console.log(`✅ Conexión eliminada: ${connectionId}`);
 
     return {
       statusCode: 200,
-      body: "Disconnected",
+      body: JSON.stringify({ message: 'Disconnected' })
     };
 
   } catch (err) {
-    console.error("Error en disconnect:", err);
+    console.error('=== ERROR EN $DISCONNECT ===');
+    console.error('Error:', err.message);
+    console.error('Stack:', err.stack);
 
+    // Retornar 200 de todas formas porque ya se desconectó
     return {
-      statusCode: 500,
-      body: "Internal Server Error",
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Disconnected with errors' })
     };
   }
 };
-
-
-
-// """
-// Lambda function: Manejar desconexiones WebSocket
-// Route: $disconnect
-// """
-// import os
-// from typing import Dict, Any
-
-// # Importar utilidades
-// import sys
-// sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
-// from utils.dynamodb import delete_item, get_item, CONNECTIONS_TABLE
-
-
-// def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-//     """
-//     Maneja desconexiones WebSocket
-    
-//     Elimina la conexión de DynamoDB cuando un cliente se desconecta
-    
-//     Event structure:
-//     {
-//         "requestContext": {
-//             "connectionId": "abc123xyz",
-//             "routeKey": "$disconnect"
-//         }
-//     }
-    
-//     Response:
-//     - 200: Desconexión procesada exitosamente
-//     """
-//     try:
-//         connection_id = event['requestContext']['connectionId']
-        
-//         print(f"Desconexión WebSocket: {connection_id}")
-        
-//         # Obtener información de la conexión antes de eliminarla (para logs)
-//         connection = get_item(CONNECTIONS_TABLE, {'connectionId': connection_id})
-        
-//         if connection:
-//             user_id = connection.get('userId')
-//             role = connection.get('role')
-//             print(f"Desconectando usuario: {user_id} ({role})")
-//         else:
-//             print(f"Conexión {connection_id} no encontrada en DynamoDB")
-        
-//         # Eliminar conexión de DynamoDB
-//         delete_item(CONNECTIONS_TABLE, {'connectionId': connection_id})
-        
-//         print(f"Conexión eliminada: {connection_id}")
-        
-//         return {
-//             'statusCode': 200,
-//             'body': 'Disconnected'
-//         }
-    
-//     except KeyError as e:
-//         print(f"Error: Campo requerido faltante - {str(e)}")
-//         return {
-//             'statusCode': 400,
-//             'body': f'Bad Request: {str(e)}'
-//         }
-    
-//     except Exception as e:
-//         print(f"Error en disconnect: {str(e)}")
-//         import traceback
-//         traceback.print_exc()
-//         return {
-//             'statusCode': 500,
-//             'body': 'Internal Server Error'
-//         }
