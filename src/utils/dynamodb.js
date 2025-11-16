@@ -172,6 +172,10 @@ export async function scanItems(tableName, options = {}) {
     params.ExpressionAttributeValues = options.expressionValues;
   }
 
+  if (options.expressionNames) {
+    params.ExpressionAttributeNames = options.expressionNames;
+  }
+
   if (options.limit) {
     params.Limit = options.limit;
   }
