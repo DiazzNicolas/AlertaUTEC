@@ -20,7 +20,7 @@ provider:
     WEBSOCKET_ENDPOINT: !Sub 'https://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}'
     
     # JWT Secret (en producción usar SSM Parameter Store)
-    JWT_SECRET: ${ssm:/incident-system/${sls:stage}/jwt-secret}
+    JWT_SECRET: ${ssm:/incident-system/dev/jwt-secret, 'default-jwt-secret'}
     
     # Stage
     STAGE: ${sls:stage}
@@ -419,9 +419,6 @@ resources:
         # - Email de administradores
         # - SMS para incidentes urgentes
         # - Lambda functions para procesamiento
-
-plugins:
-  - serverless-python-requirements
 
 custom:
   pythonRequirements:
