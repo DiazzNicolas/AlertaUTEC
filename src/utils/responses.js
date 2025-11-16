@@ -146,15 +146,3 @@ export function noContent() {
   };
 }
 
-export {
-  successResponse,
-  errorResponse,
-  badRequest,
-  unauthorized,
-  forbidden,
-  notFound,
-  conflict,
-  internalError,
-  created,
-  noContent
-};
