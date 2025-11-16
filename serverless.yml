@@ -1,18 +1,9 @@
 org: nicolasdiaz
 service: incident-management-system
 
-# NOTA: No incluimos serverless-python-requirements en plugins para evitar
-# problemas con Serverless v4. Usamos un layer manual 'pythonDeps'.
-# Antes de deployar, ejecutar:
-#   rm -rf .serverless
-#   rm -rf python
-#   mkdir python
-#   pip install -r requirements.txt -t python/
-# Luego: sls deploy
-
 provider:
   name: aws
-  runtime: python3.13
+  runtime: nodejs20.x
   region: us-east-1
   iam:
     role: arn:aws:iam::895179168118:role/LabRole
@@ -21,16 +12,16 @@ provider:
     USERS_TABLE: ${sls:stage}_t_usuarios
     INCIDENTS_TABLE: ${sls:stage}_t_incidentes
     CONNECTIONS_TABLE: ${sls:stage}_t_conexiones
-
+    
     # S3 Bucket para imágenes
     IMAGES_BUCKET: ${sls:stage}-incident-images-bucket
-
-    # WebSocket (se reemplaza con el output del recurso creado por framework)
+    
+    # WebSocket
     WEBSOCKET_ENDPOINT: !Sub 'https://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}'
-
+    
     # JWT Secret (en producción usar SSM Parameter Store)
     JWT_SECRET: ${ssm:/incident-system/dev/jwt-secret, 'default-jwt-secret'}
-
+    
     # Stage
     STAGE: ${sls:stage}
 
@@ -48,31 +39,12 @@ provider:
         - PUT
         - DELETE
 
-# -------------------------------------------------------
-# LAYERS (DEPENDENCIAS PYTHON) - build localmente en folder "python/"
-# -------------------------------------------------------
-layers:
-  pythonDeps:
-    path: python
-    description: Python dependencies layer (built locally with pip -t python/)
-    compatibleRuntimes:
-      - python3.13
-
-# Un atajo para añadir el mismo layer a todas las funciones
-custom:
-  commonLayers:
-    - { Ref: PythonDepsLambdaLayer }
-
-# ============================================
-# FUNCTIONS
-# ============================================
 functions:
   # ==========================================
   # AUTENTICACIÓN
   # ==========================================
   register:
     handler: src/auth/register.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /auth/register
@@ -81,7 +53,6 @@ functions:
 
   login:
     handler: src/auth/login.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /auth/login
@@ -90,7 +61,6 @@ functions:
 
   authorizer:
     handler: src/auth/authorizer.handler
-    layers: ${self:custom.commonLayers}
     description: Validar JWT tokens en requests autenticados
 
   # ==========================================
@@ -98,7 +68,6 @@ functions:
   # ==========================================
   createIncident:
     handler: src/incidents/create.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /incidents
@@ -108,7 +77,6 @@ functions:
 
   listIncidents:
     handler: src/incidents/list.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /incidents
@@ -117,7 +85,6 @@ functions:
 
   getIncident:
     handler: src/incidents/get.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /incidents/{id}
@@ -126,7 +93,6 @@ functions:
 
   updateIncident:
     handler: src/incidents/update.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /incidents/{id}
@@ -135,7 +101,6 @@ functions:
 
   assignIncident:
     handler: src/incidents/assign.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /incidents/{id}/assign
@@ -147,7 +112,6 @@ functions:
   # ==========================================
   listWorkers:
     handler: src/workers/list.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /workers
@@ -156,7 +120,6 @@ functions:
 
   getWorkerStats:
     handler: src/workers/stats.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /workers/{workerId}/stats
@@ -165,7 +128,6 @@ functions:
 
   updateWorkerStatus:
     handler: src/workers/update_status.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /workers/{workerId}/status
@@ -177,7 +139,6 @@ functions:
   # ==========================================
   getMetrics:
     handler: src/analytics/metrics.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /analytics/metrics
@@ -186,7 +147,6 @@ functions:
 
   getDashboard:
     handler: src/analytics/dashboard.handler
-    layers: ${self:custom.commonLayers}
     events:
       - httpApi:
           path: /analytics/dashboard
@@ -198,7 +158,6 @@ functions:
   # ==========================================
   connectHandler:
     handler: src/websocket/connect.handler
-    layers: ${self:custom.commonLayers}
     events:
       - websocket:
           route: $connect
@@ -206,7 +165,6 @@ functions:
 
   disconnectHandler:
     handler: src/websocket/disconnect.handler
-    layers: ${self:custom.commonLayers}
     events:
       - websocket:
           route: $disconnect
@@ -214,7 +172,6 @@ functions:
 
   defaultHandler:
     handler: src/websocket/default.handler
-    layers: ${self:custom.commonLayers}
     events:
       - websocket:
           route: $default
@@ -222,15 +179,13 @@ functions:
 
   broadcastHandler:
     handler: src/websocket/broadcast.handler
-    layers: ${self:custom.commonLayers}
     description: Enviar notificaciones broadcast a usuarios conectados
 
-# ============================================
-# RESOURCES (DynamoDB tables, S3 bucket, etc.)
-# Mantengo tu definición original
-# ============================================
 resources:
   Resources:
+    # ==========================================
+    # TABLA: USUARIOS
+    # ==========================================
     TablaUsuarios:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -260,6 +215,9 @@ resources:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
 
+    # ==========================================
+    # TABLA: INCIDENTES
+    # ==========================================
     TablaIncidentes:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -305,6 +263,9 @@ resources:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
 
+    # ==========================================
+    # TABLA: CONEXIONES WEBSOCKET
+    # ==========================================
     TablaConexiones:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -337,6 +298,9 @@ resources:
           AttributeName: ttl
         BillingMode: PAY_PER_REQUEST
 
+    # ==========================================
+    # S3 BUCKET - IMÁGENES DE INCIDENTES
+    # ==========================================
     ImagesBucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -364,6 +328,9 @@ resources:
               ExpirationInDays: 730
               Prefix: incidents/
 
+    # ==========================================
+    # S3 BUCKET POLICY
+    # ==========================================
     ImagesBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
@@ -372,13 +339,16 @@ resources:
           Statement:
             - Effect: Allow
               Principal:
-                AWS: arn:aws:iam::730872172556:role/LabRole
+                AWS: arn:aws:iam::895179168118:role/LabRole
               Action:
                 - s3:GetObject
                 - s3:PutObject
                 - s3:DeleteObject
               Resource: !Sub "${ImagesBucket.Arn}/*"
 
+    # ==========================================
+    # SNS TOPIC - NOTIFICACIONES
+    # ==========================================
     IncidentNotificationsTopic:
       Type: AWS::SNS::Topic
       Properties:
@@ -390,12 +360,12 @@ outputs:
     Value:
       Fn::Sub: "wss://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}"
     Description: WebSocket endpoint para notificaciones en tiempo real
-
+  
   ApiEndpoint:
     Value:
       Fn::Sub: "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
     Description: HTTP API endpoint para REST API
-
+  
   ImagesBucket:
     Value: !Ref ImagesBucket
     Description: S3 Bucket para almacenar imágenes de incidentes
