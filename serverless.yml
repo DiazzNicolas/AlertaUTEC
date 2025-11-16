@@ -1,0 +1,449 @@
+org: tuorganizacion
+service: incident-management-system
+
+provider:
+  name: aws
+  runtime: python3.13
+  region: us-east-1
+  iam:
+    role: arn:aws:iam::730872172556:role/LabRole
+  environment:
+    # Tablas DynamoDB
+    USERS_TABLE: ${sls:stage}_t_usuarios
+    INCIDENTS_TABLE: ${sls:stage}_t_incidentes
+    CONNECTIONS_TABLE: ${sls:stage}_t_conexiones
+    
+    # S3 Bucket para imágenes
+    IMAGES_BUCKET: ${sls:stage}-incident-images-bucket
+    
+    # WebSocket
+    WEBSOCKET_ENDPOINT: !Sub 'https://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}'
+    
+    # JWT Secret (en producción usar SSM Parameter Store)
+    JWT_SECRET: ${ssm:/incident-system/${sls:stage}/jwt-secret}
+    
+    # Stage
+    STAGE: ${sls:stage}
+
+  httpApi:
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - OPTIONS
+        - GET
+        - POST
+        - PUT
+        - DELETE
+
+functions:
+  # ==========================================
+  # AUTENTICACIÓN
+  # ==========================================
+  register:
+    handler: src/auth/register.handler
+    events:
+      - httpApi:
+          path: /auth/register
+          method: post
+    description: Registrar nuevo usuario (alumno, worker, admin)
+
+  login:
+    handler: src/auth/login.handler
+    events:
+      - httpApi:
+          path: /auth/login
+          method: post
+    description: Iniciar sesión y obtener JWT token
+
+  # Authorizer personalizado para validar JWT
+  authorizer:
+    handler: src/auth/authorizer.handler
+    description: Validar JWT tokens en requests autenticados
+
+  # ==========================================
+  # GESTIÓN DE INCIDENTES
+  # ==========================================
+  createIncident:
+    handler: src/incidents/create.handler
+    events:
+      - httpApi:
+          path: /incidents
+          method: post
+    timeout: 30
+    description: Crear nuevo incidente (requiere autenticación)
+
+  listIncidents:
+    handler: src/incidents/list.handler
+    events:
+      - httpApi:
+          path: /incidents
+          method: get
+    description: Listar incidentes con filtros (status, priority, category, etc.)
+
+  getIncident:
+    handler: src/incidents/get.handler
+    events:
+      - httpApi:
+          path: /incidents/{id}
+          method: get
+    description: Obtener detalle completo de un incidente
+
+  updateIncident:
+    handler: src/incidents/update.handler
+    events:
+      - httpApi:
+          path: /incidents/{id}
+          method: put
+    description: Actualizar estado y comentarios de incidente
+
+  assignIncident:
+    handler: src/incidents/assign.handler
+    events:
+      - httpApi:
+          path: /incidents/{id}/assign
+          method: post
+    description: Asignar trabajador a incidente (solo admin)
+
+  # ==========================================
+  # PERSONAL DE MANTENIMIENTO (WORKERS)
+  # ==========================================
+  listWorkers:
+    handler: src/workers/list.handler
+    events:
+      - httpApi:
+          path: /workers
+          method: get
+    description: Listar personal de mantenimiento con carga de trabajo
+
+  getWorkerStats:
+    handler: src/workers/stats.handler
+    events:
+      - httpApi:
+          path: /workers/{workerId}/stats
+          method: get
+    description: Obtener estadísticas detalladas de un trabajador
+
+  updateWorkerStatus:
+    handler: src/workers/update_status.handler
+    events:
+      - httpApi:
+          path: /workers/{workerId}/status
+          method: put
+    description: Actualizar estado y ubicación del trabajador
+
+  # ==========================================
+  # ANALYTICS Y MÉTRICAS
+  # ==========================================
+  getMetrics:
+    handler: src/analytics/metrics.handler
+    events:
+      - httpApi:
+          path: /analytics/metrics
+          method: get
+    description: Obtener métricas del sistema (incidentes por categoría, tiempos, etc.)
+
+  getDashboard:
+    handler: src/analytics/dashboard.handler
+    events:
+      - httpApi:
+          path: /analytics/dashboard
+          method: get
+    description: Dashboard con estadísticas en tiempo real
+
+  # ==========================================
+  # WEBSOCKET - NOTIFICACIONES EN TIEMPO REAL
+  # ==========================================
+  connectHandler:
+    handler: src/websocket/connect.handler
+    events:
+      - websocket:
+          route: $connect
+    description: Manejar conexión WebSocket
+
+  disconnectHandler:
+    handler: src/websocket/disconnect.handler
+    events:
+      - websocket:
+          route: $disconnect
+    description: Manejar desconexión WebSocket
+
+  defaultHandler:
+    handler: src/websocket/default.handler
+    events:
+      - websocket:
+          route: $default
+    description: Ruta por defecto para WebSocket
+
+  broadcastHandler:
+    handler: src/websocket/broadcast.handler
+    description: Enviar notificaciones broadcast a usuarios conectados
+
+resources:
+  Resources:
+    # ==========================================
+    # TABLA: USUARIOS
+    # ==========================================
+    TablaUsuarios:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: role
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: RoleIndex
+            KeySchema:
+              - AttributeName: role
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+        # Estructura:
+        # {
+        #   userId: "usr_1a2b3c4d",
+        #   email: "juan.perez@universidad.edu.pe",
+        #   password: "$2b$12$hashed_password",
+        #   name: "Juan Pérez",
+        #   role: "alumno", // alumno | worker | admin
+        #   phone: "+51999123456",
+        #   studentCode: "2021100123",  // Solo para alumnos
+        #   faculty: "Ingeniería",
+        #   career: "Ingeniería de Sistemas",
+        #   specialty: "Electricista",  // Solo para workers
+        #   department: "Mantenimiento", // Solo para workers
+        #   workloadPoints: 6,  // Solo para workers (0-20)
+        #   maxWorkloadPoints: 20, // Solo para workers
+        #   activeIncidents: 2, // Solo para workers
+        #   totalResolved: 45, // Solo para workers
+        #   avgResolutionTimeHours: 2.5, // Solo para workers
+        #   rating: 4.5, // Solo para workers
+        #   createdAt: 1700000000000,
+        #   updatedAt: 1700000000000,
+        #   status: "active" // active | inactive | busy
+        # }
+
+    # ==========================================
+    # TABLA: INCIDENTES
+    # ==========================================
+    TablaIncidentes:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.INCIDENTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: incidentId
+            AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: N
+          - AttributeName: priority
+            AttributeType: S
+          - AttributeName: assignedTo
+            AttributeType: S
+        KeySchema:
+          - AttributeName: incidentId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: StatusCreatedAtIndex
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: PriorityIndex
+            KeySchema:
+              - AttributeName: priority
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: AssignedToIndex
+            KeySchema:
+              - AttributeName: assignedTo
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+        # Estructura:
+        # {
+        #   incidentId: "inc_xyz789abc",
+        #   title: "Luz fundida en Aula 302",
+        #   description: "La luz fluorescente está fundida",
+        #   category: "electricidad", // mantenimiento-general | seguridad | infraestructura | limpieza | electricidad | plomeria | sistemas-tecnologia | elevadores | otros
+        #   priority: "medium", // low | medium | high | urgent
+        #   status: "pending", // pending | assigned | in_progress | resolved | closed
+        #   location: {
+        #     building: "Pabellón A",
+        #     floor: 3,
+        #     room: "302",
+        #     specificLocation: "Aula de clases"
+        #   },
+        #   images: ["incidents/inc_xyz789abc/image1.jpg"],
+        #   reportedBy: "usr_1a2b3c4d",
+        #   assignedTo: "usr_worker123",
+        #   createdAt: 1700000000000,
+        #   updatedAt: 1700000000000,
+        #   resolvedAt: null,
+        #   comments: [
+        #     {
+        #       userId: "usr_worker123",
+        #       userName: "Carlos López",
+        #       comment: "Revisando el problema",
+        #       timestamp: 1700005000000
+        #     }
+        #   ]
+        # }
+
+    # ==========================================
+    # TABLA: CONEXIONES WEBSOCKET
+    # ==========================================
+    TablaConexiones:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.CONNECTIONS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: role
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: UserIdIndex
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: RoleIndex
+            KeySchema:
+              - AttributeName: role
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        TimeToLiveSpecification:
+          Enabled: true
+          AttributeName: ttl
+        BillingMode: PAY_PER_REQUEST
+        # Estructura:
+        # {
+        #   connectionId: "abc123xyz789",
+        #   userId: "usr_1a2b3c4d",
+        #   role: "admin", // alumno | worker | admin
+        #   connectedAt: 1700000000000,
+        #   ttl: 1700086400 // 24 horas
+        # }
+
+    # ==========================================
+    # S3 BUCKET - IMÁGENES DE INCIDENTES
+    # ==========================================
+    ImagesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.IMAGES_BUCKET}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+              MaxAge: 3000
+        LifecycleConfiguration:
+          Rules:
+            - Id: DeleteOldIncidentImages
+              Status: Enabled
+              ExpirationInDays: 730  # 2 años
+              Prefix: incidents/
+
+    # ==========================================
+    # S3 BUCKET POLICY
+    # ==========================================
+    ImagesBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref ImagesBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::730872172556:role/LabRole
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:DeleteObject
+              Resource: !Sub "${ImagesBucket.Arn}/*"
+
+    # ==========================================
+    # SNS TOPIC - NOTIFICACIONES
+    # ==========================================
+    IncidentNotificationsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${sls:stage}-incident-notifications
+        DisplayName: Notificaciones de Incidentes Universitarios
+        # Subscripciones se pueden agregar manualmente:
+        # - Email de administradores
+        # - SMS para incidentes urgentes
+        # - Lambda functions para procesamiento
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    layer: true
+    slim: true
+    strip: false
+    zip: true
+    usePipenv: false
+    usePoetry: false
+
+outputs:
+  WebsocketEndpoint:
+    Value:
+      Fn::Sub: "wss://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}"
+    Description: WebSocket endpoint para notificaciones en tiempo real
+  
+  ApiEndpoint:
+    Value:
+      Fn::Sub: "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Description: HTTP API endpoint para REST API
+  
+  ImagesBucket:
+    Value: !Ref ImagesBucket
+    Description: S3 Bucket para almacenar imágenes de incidentes
