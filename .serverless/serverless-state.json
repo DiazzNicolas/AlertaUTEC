@@ -20,7 +20,10 @@
           "Fn::Sub": "https://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
         },
         "JWT_SECRET": "default-jwt-secret",
-        "STAGE": "dev"
+        "STAGE": "dev",
+        "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+          "Ref": "IncidentNotificationsTopic"
+        }
       },
       "httpApi": {
         "cors": {
@@ -148,12 +151,18 @@
               "LogGroupName": "/aws/lambda/incident-management-system-dev-broadcastHandler"
             }
           },
+          "SubscribeAdminsLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/incident-management-system-dev-subscribeAdmins"
+            }
+          },
           "RegisterLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/auth/register.handler",
               "Runtime": "nodejs20.x",
@@ -171,7 +180,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -185,7 +197,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/auth/login.handler",
               "Runtime": "nodejs20.x",
@@ -203,7 +215,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -217,7 +232,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/auth/authorizer.handler",
               "Runtime": "nodejs20.x",
@@ -235,7 +250,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -249,7 +267,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/incidents/create.handler",
               "Runtime": "nodejs20.x",
@@ -267,7 +285,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -281,7 +302,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/incidents/list.handler",
               "Runtime": "nodejs20.x",
@@ -299,7 +320,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -313,7 +337,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/incidents/get.handler",
               "Runtime": "nodejs20.x",
@@ -331,7 +355,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -345,7 +372,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/incidents/update.handler",
               "Runtime": "nodejs20.x",
@@ -363,7 +390,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -377,7 +407,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/incidents/assign.handler",
               "Runtime": "nodejs20.x",
@@ -395,7 +425,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -409,7 +442,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/workers/list.handler",
               "Runtime": "nodejs20.x",
@@ -427,7 +460,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -441,7 +477,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/workers/stats.handler",
               "Runtime": "nodejs20.x",
@@ -459,7 +495,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -473,7 +512,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/workers/update_status.handler",
               "Runtime": "nodejs20.x",
@@ -491,7 +530,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -505,7 +547,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/analytics/metrics.handler",
               "Runtime": "nodejs20.x",
@@ -523,7 +565,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -537,7 +582,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/analytics/dashboard.handler",
               "Runtime": "nodejs20.x",
@@ -555,7 +600,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -569,7 +617,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/websocket/connect.handler",
               "Runtime": "nodejs20.x",
@@ -587,7 +635,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -601,7 +652,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/websocket/disconnect.handler",
               "Runtime": "nodejs20.x",
@@ -619,7 +670,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -633,7 +687,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/websocket/default.handler",
               "Runtime": "nodejs20.x",
@@ -651,7 +705,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -665,7 +722,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
-                "S3Key": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z/incident-management-system.zip"
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
               },
               "Handler": "src/websocket/broadcast.handler",
               "Runtime": "nodejs20.x",
@@ -683,7 +740,10 @@
                     "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
                   },
                   "JWT_SECRET": "default-jwt-secret",
-                  "STAGE": "dev"
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
                 }
               },
               "Role": "arn:aws:iam::895179168118:role/LabRole"
@@ -692,191 +752,237 @@
               "BroadcastHandlerLogGroup"
             ]
           },
-          "RegisterLambdaVersion2c8nGYCrNSngLQrXm8eydaayPYm3MSQW02gEZIJ6WM": {
+          "SubscribeAdminsLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-96869e55-7740",
+                "S3Key": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z/incident-management-system.zip"
+              },
+              "Handler": "src/notifications/sendIncidentEmail.subscribeAdminsHandler",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "incident-management-system-dev-subscribeAdmins",
+              "MemorySize": 1024,
+              "Timeout": 60,
+              "Description": "Suscribir administradores a notificaciones por email (ejecutar una vez)",
+              "Environment": {
+                "Variables": {
+                  "USERS_TABLE": "dev_t_usuarios",
+                  "INCIDENTS_TABLE": "dev_t_incidentes",
+                  "CONNECTIONS_TABLE": "dev_t_conexiones",
+                  "IMAGES_BUCKET": "dev-incident-images-bucket",
+                  "WEBSOCKET_ENDPOINT": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"WEBSOCKET_ENDPOINT\"]"
+                  },
+                  "JWT_SECRET": "default-jwt-secret",
+                  "STAGE": "dev",
+                  "INCIDENT_NOTIFICATION_TOPIC_ARN": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"INCIDENT_NOTIFICATION_TOPIC_ARN\"]"
+                  }
+                }
+              },
+              "Role": "arn:aws:iam::895179168118:role/LabRole"
+            },
+            "DependsOn": [
+              "SubscribeAdminsLogGroup"
+            ]
+          },
+          "RegisterLambdaVersionYnnNi6IIi0FnWlD22YhKYaBhXW4KgjpFxQhia4H2s": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "RegisterLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Registrar nuevo usuario (alumno, worker, admin)"
             }
           },
-          "LoginLambdaVersionhRaJhBB8XQKSivCkj6qt9BSdALv8xFC9mBEee9PA": {
+          "LoginLambdaVersiontl4BGj2CVJneV1UVzZx4TXHlVm9TF429s7CsRGspuQ": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "LoginLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Iniciar sesión y obtener JWT token"
             }
           },
-          "AuthorizerLambdaVersiony8dNkAJh39vg1KZjtAtzuxXTXfB1alvvjrEOh9c": {
+          "AuthorizerLambdaVersion33INJZtFNOVZcVztht11DESsbOVYmaRAuR1i9SCmHI": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AuthorizerLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Validar JWT tokens en requests autenticados"
             }
           },
-          "CreateIncidentLambdaVersionialCorLRwxD3kBhxfn855Uew6ML8wLr7VkuQfD0WZo": {
+          "CreateIncidentLambdaVersioniNbZ4lh3Jf28AUNXnySSlnpGnFDrgdJ61HuDkc9TAQ": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "CreateIncidentLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Crear nuevo incidente (requiere autenticación)"
             }
           },
-          "ListIncidentsLambdaVersionJSmYQPTngZplEyIWWYC4pN64vleQ1GOJiq6ckqEHQ": {
+          "ListIncidentsLambdaVersionFrx3Gsou83XxPSufqoEuYmuuUcTNgcxKgDlsCf7vTtw": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ListIncidentsLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Listar incidentes con filtros (status, priority, category, etc.)"
             }
           },
-          "GetIncidentLambdaVersionGS918MCKoN7y6r6AwP4zxdf0Nsc2Ev7xdZmjgbrhFw": {
+          "GetIncidentLambdaVersion5ZRjewVqErhnKFtpZN6LQMX8uJeErgpfxp8lMPk0ezM": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GetIncidentLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Obtener detalle completo de un incidente"
             }
           },
-          "UpdateIncidentLambdaVersionjA38T9L4sMw0XPMY74U4tFEskwxqMxmR3Dvp2C1HyKw": {
+          "UpdateIncidentLambdaVersion8OQOuVAl1rBUqBbKFHrIarl6mYropd4vgmZQf72p0": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "UpdateIncidentLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Actualizar estado y comentarios de incidente"
             }
           },
-          "AssignIncidentLambdaVersiondMTIRypEQA2Elferu9OCecdQIbVUIDb5Y8JiR7eT8k": {
+          "AssignIncidentLambdaVersion9HaWC4lwE37eipxaCPSfPAiyvxcB8pwsMxES1AKiw": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AssignIncidentLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Asignar trabajador a incidente (solo admin)"
             }
           },
-          "ListWorkersLambdaVersionAGIdFww6jhNnaQmQgZ6WMoWxoOCcSTc41Sw1jXcAo": {
+          "ListWorkersLambdaVersionMLr8fMRNPZeO6QBVbrD37SxC15nSOCYhBwk8xklRd8": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ListWorkersLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Listar personal de mantenimiento con carga de trabajo"
             }
           },
-          "GetWorkerStatsLambdaVersiongJaF9MHwbTBUext5DGOIpBN0v4y6ShtT9Gfz9CqizAs": {
+          "GetWorkerStatsLambdaVersiond64vejM0Gm5MT8Uw3b0yY8qmaRdIYcXEalCvCiTQAs": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GetWorkerStatsLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Obtener estadísticas detalladas de un trabajador"
             }
           },
-          "UpdateWorkerStatusLambdaVersionxPpnaUOgffWjfGZOLg5pQvH3SONXhuxwUaGzR4XHNg": {
+          "UpdateWorkerStatusLambdaVersionOjqHc7t85wi75ZCURC29mpAOx4b0iKbBDZFHxng": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "UpdateWorkerStatusLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Actualizar estado y ubicación del trabajador"
             }
           },
-          "GetMetricsLambdaVersionVd4fMSwHvaGwX3a4k0ibNmzNKPNdldxqVTxPzJLVswc": {
+          "GetMetricsLambdaVersionls8aTXQs2L90O9dD7nNrpBq3pVhZqvXD1YrVpWjlHdM": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GetMetricsLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Obtener métricas del sistema (incidentes por categoría, tiempos, etc.)"
             }
           },
-          "GetDashboardLambdaVersionKoVEIRqTtrd3zShfWK6SGe7emOCL043IwKsH7kL3M": {
+          "GetDashboardLambdaVersionRtfjaPmZdULmUsedvFRCpECIoFRXJUIk5oV6O1JduI": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GetDashboardLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Dashboard con estadísticas en tiempo real"
             }
           },
-          "ConnectHandlerLambdaVersion9jb0zTEslXTg8peTKUoDb0f2bmkVqeVTRky8sEW7578": {
+          "ConnectHandlerLambdaVersionfXl0ZyACMytD4MRWSrEThLACugNjkKmAG4L0VNZOBg": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ConnectHandlerLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Manejar conexión WebSocket"
             }
           },
-          "DisconnectHandlerLambdaVersionsBfCoz6xGwWoAk5JUBkVPUZvxvNFwFCKCkpzdoN6FQc": {
+          "DisconnectHandlerLambdaVersionwBfP78loOkTJ2SZeOHO1jcGEIhOtjhCkIcrvFRA2A": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "DisconnectHandlerLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Manejar desconexión WebSocket"
             }
           },
-          "DefaultHandlerLambdaVersionvGci9qnK6W7ACkknWgAvB55L39JDfWp1umCf5Ay8ntU": {
+          "DefaultHandlerLambdaVersionxQcgSW4Oh2LogwDuDoLr67zVhTCsnxGvUOlrJ5c": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "DefaultHandlerLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Ruta por defecto para WebSocket"
             }
           },
-          "BroadcastHandlerLambdaVersionMBb91E3OClKAytvuYYcHhYtgXYq4eJV4Vqg1qGpDjQ": {
+          "BroadcastHandlerLambdaVersion0Xc7a3gPnRkJ5aataLesPDbVOH3OweWWGzJ5oxiE884": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "BroadcastHandlerLambdaFunction"
               },
-              "CodeSha256": "v51hthYCStdrTyTNvamlGheddBTJ6LHRTeDZzh8QY+4=",
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
               "Description": "Enviar notificaciones broadcast a usuarios conectados"
+            }
+          },
+          "SubscribeAdminsLambdaVersionxi0UgqpI3fmgFjkGZAdbVuLJx53yOy1rcNZGZPmrXeQ": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SubscribeAdminsLambdaFunction"
+              },
+              "CodeSha256": "gi3YAG6mcCWQKsjR2qVF/n/XlC8yRPa9tTuqIjFm1dE=",
+              "Description": "Suscribir administradores a notificaciones por email (ejecutar una vez)"
             }
           },
           "WebsocketsApi": {
@@ -2025,6 +2131,78 @@
             },
             "DependsOn": "HttpApiIntegrationGetDashboard"
           },
+          "SubscribeAdminsLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SubscribeAdminsLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationSubscribeAdmins": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SubscribeAdminsLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostAdminSubscribeDashnotifications": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /admin/subscribe-notifications",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationSubscribeAdmins"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationSubscribeAdmins"
+          },
           "TablaUsuarios": {
             "Type": "AWS::DynamoDB::Table",
             "Properties": {
@@ -2304,7 +2482,7 @@
           "RegisterLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "RegisterLambdaVersion2c8nGYCrNSngLQrXm8eydaayPYm3MSQW02gEZIJ6WM"
+              "Ref": "RegisterLambdaVersionYnnNi6IIi0FnWlD22YhKYaBhXW4KgjpFxQhia4H2s"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-RegisterLambdaFunctionQualifiedArn"
@@ -2313,7 +2491,7 @@
           "LoginLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "LoginLambdaVersionhRaJhBB8XQKSivCkj6qt9BSdALv8xFC9mBEee9PA"
+              "Ref": "LoginLambdaVersiontl4BGj2CVJneV1UVzZx4TXHlVm9TF429s7CsRGspuQ"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-LoginLambdaFunctionQualifiedArn"
@@ -2322,7 +2500,7 @@
           "AuthorizerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AuthorizerLambdaVersiony8dNkAJh39vg1KZjtAtzuxXTXfB1alvvjrEOh9c"
+              "Ref": "AuthorizerLambdaVersion33INJZtFNOVZcVztht11DESsbOVYmaRAuR1i9SCmHI"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-AuthorizerLambdaFunctionQualifiedArn"
@@ -2331,7 +2509,7 @@
           "CreateIncidentLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "CreateIncidentLambdaVersionialCorLRwxD3kBhxfn855Uew6ML8wLr7VkuQfD0WZo"
+              "Ref": "CreateIncidentLambdaVersioniNbZ4lh3Jf28AUNXnySSlnpGnFDrgdJ61HuDkc9TAQ"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-CreateIncidentLambdaFunctionQualifiedArn"
@@ -2340,7 +2518,7 @@
           "ListIncidentsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ListIncidentsLambdaVersionJSmYQPTngZplEyIWWYC4pN64vleQ1GOJiq6ckqEHQ"
+              "Ref": "ListIncidentsLambdaVersionFrx3Gsou83XxPSufqoEuYmuuUcTNgcxKgDlsCf7vTtw"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-ListIncidentsLambdaFunctionQualifiedArn"
@@ -2349,7 +2527,7 @@
           "GetIncidentLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GetIncidentLambdaVersionGS918MCKoN7y6r6AwP4zxdf0Nsc2Ev7xdZmjgbrhFw"
+              "Ref": "GetIncidentLambdaVersion5ZRjewVqErhnKFtpZN6LQMX8uJeErgpfxp8lMPk0ezM"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-GetIncidentLambdaFunctionQualifiedArn"
@@ -2358,7 +2536,7 @@
           "UpdateIncidentLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "UpdateIncidentLambdaVersionjA38T9L4sMw0XPMY74U4tFEskwxqMxmR3Dvp2C1HyKw"
+              "Ref": "UpdateIncidentLambdaVersion8OQOuVAl1rBUqBbKFHrIarl6mYropd4vgmZQf72p0"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-UpdateIncidentLambdaFunctionQualifiedArn"
@@ -2367,7 +2545,7 @@
           "AssignIncidentLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AssignIncidentLambdaVersiondMTIRypEQA2Elferu9OCecdQIbVUIDb5Y8JiR7eT8k"
+              "Ref": "AssignIncidentLambdaVersion9HaWC4lwE37eipxaCPSfPAiyvxcB8pwsMxES1AKiw"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-AssignIncidentLambdaFunctionQualifiedArn"
@@ -2376,7 +2554,7 @@
           "ListWorkersLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ListWorkersLambdaVersionAGIdFww6jhNnaQmQgZ6WMoWxoOCcSTc41Sw1jXcAo"
+              "Ref": "ListWorkersLambdaVersionMLr8fMRNPZeO6QBVbrD37SxC15nSOCYhBwk8xklRd8"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-ListWorkersLambdaFunctionQualifiedArn"
@@ -2385,7 +2563,7 @@
           "GetWorkerStatsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GetWorkerStatsLambdaVersiongJaF9MHwbTBUext5DGOIpBN0v4y6ShtT9Gfz9CqizAs"
+              "Ref": "GetWorkerStatsLambdaVersiond64vejM0Gm5MT8Uw3b0yY8qmaRdIYcXEalCvCiTQAs"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-GetWorkerStatsLambdaFunctionQualifiedArn"
@@ -2394,7 +2572,7 @@
           "UpdateWorkerStatusLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "UpdateWorkerStatusLambdaVersionxPpnaUOgffWjfGZOLg5pQvH3SONXhuxwUaGzR4XHNg"
+              "Ref": "UpdateWorkerStatusLambdaVersionOjqHc7t85wi75ZCURC29mpAOx4b0iKbBDZFHxng"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-UpdateWorkerStatusLambdaFunctionQualifiedArn"
@@ -2403,7 +2581,7 @@
           "GetMetricsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GetMetricsLambdaVersionVd4fMSwHvaGwX3a4k0ibNmzNKPNdldxqVTxPzJLVswc"
+              "Ref": "GetMetricsLambdaVersionls8aTXQs2L90O9dD7nNrpBq3pVhZqvXD1YrVpWjlHdM"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-GetMetricsLambdaFunctionQualifiedArn"
@@ -2412,7 +2590,7 @@
           "GetDashboardLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GetDashboardLambdaVersionKoVEIRqTtrd3zShfWK6SGe7emOCL043IwKsH7kL3M"
+              "Ref": "GetDashboardLambdaVersionRtfjaPmZdULmUsedvFRCpECIoFRXJUIk5oV6O1JduI"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-GetDashboardLambdaFunctionQualifiedArn"
@@ -2421,7 +2599,7 @@
           "ConnectHandlerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ConnectHandlerLambdaVersion9jb0zTEslXTg8peTKUoDb0f2bmkVqeVTRky8sEW7578"
+              "Ref": "ConnectHandlerLambdaVersionfXl0ZyACMytD4MRWSrEThLACugNjkKmAG4L0VNZOBg"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-ConnectHandlerLambdaFunctionQualifiedArn"
@@ -2430,7 +2608,7 @@
           "DisconnectHandlerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "DisconnectHandlerLambdaVersionsBfCoz6xGwWoAk5JUBkVPUZvxvNFwFCKCkpzdoN6FQc"
+              "Ref": "DisconnectHandlerLambdaVersionwBfP78loOkTJ2SZeOHO1jcGEIhOtjhCkIcrvFRA2A"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-DisconnectHandlerLambdaFunctionQualifiedArn"
@@ -2439,7 +2617,7 @@
           "DefaultHandlerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "DefaultHandlerLambdaVersionvGci9qnK6W7ACkknWgAvB55L39JDfWp1umCf5Ay8ntU"
+              "Ref": "DefaultHandlerLambdaVersionxQcgSW4Oh2LogwDuDoLr67zVhTCsnxGvUOlrJ5c"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-DefaultHandlerLambdaFunctionQualifiedArn"
@@ -2448,10 +2626,19 @@
           "BroadcastHandlerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "BroadcastHandlerLambdaVersionMBb91E3OClKAytvuYYcHhYtgXYq4eJV4Vqg1qGpDjQ"
+              "Ref": "BroadcastHandlerLambdaVersion0Xc7a3gPnRkJ5aataLesPDbVOH3OweWWGzJ5oxiE884"
             },
             "Export": {
               "Name": "sls-incident-management-system-dev-BroadcastHandlerLambdaFunctionQualifiedArn"
+            }
+          },
+          "SubscribeAdminsLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SubscribeAdminsLambdaVersionxi0UgqpI3fmgFjkGZAdbVuLJx53yOy1rcNZGZPmrXeQ"
+            },
+            "Export": {
+              "Name": "sls-incident-management-system-dev-SubscribeAdminsLambdaFunctionQualifiedArn"
             }
           },
           "ServiceEndpointWebsocket": {
@@ -2539,7 +2726,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "RegisterLambdaVersion2c8nGYCrNSngLQrXm8eydaayPYm3MSQW02gEZIJ6WM"
+        "versionLogicalId": "RegisterLambdaVersionYnnNi6IIi0FnWlD22YhKYaBhXW4KgjpFxQhia4H2s"
       },
       "login": {
         "handler": "src/auth/login.handler",
@@ -2560,7 +2747,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "LoginLambdaVersionhRaJhBB8XQKSivCkj6qt9BSdALv8xFC9mBEee9PA"
+        "versionLogicalId": "LoginLambdaVersiontl4BGj2CVJneV1UVzZx4TXHlVm9TF429s7CsRGspuQ"
       },
       "authorizer": {
         "handler": "src/auth/authorizer.handler",
@@ -2572,7 +2759,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "AuthorizerLambdaVersiony8dNkAJh39vg1KZjtAtzuxXTXfB1alvvjrEOh9c"
+        "versionLogicalId": "AuthorizerLambdaVersion33INJZtFNOVZcVztht11DESsbOVYmaRAuR1i9SCmHI"
       },
       "createIncident": {
         "handler": "src/incidents/create.handler",
@@ -2593,7 +2780,7 @@
         "memory": 1024,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "CreateIncidentLambdaVersionialCorLRwxD3kBhxfn855Uew6ML8wLr7VkuQfD0WZo"
+        "versionLogicalId": "CreateIncidentLambdaVersioniNbZ4lh3Jf28AUNXnySSlnpGnFDrgdJ61HuDkc9TAQ"
       },
       "listIncidents": {
         "handler": "src/incidents/list.handler",
@@ -2614,7 +2801,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "ListIncidentsLambdaVersionJSmYQPTngZplEyIWWYC4pN64vleQ1GOJiq6ckqEHQ"
+        "versionLogicalId": "ListIncidentsLambdaVersionFrx3Gsou83XxPSufqoEuYmuuUcTNgcxKgDlsCf7vTtw"
       },
       "getIncident": {
         "handler": "src/incidents/get.handler",
@@ -2635,7 +2822,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "GetIncidentLambdaVersionGS918MCKoN7y6r6AwP4zxdf0Nsc2Ev7xdZmjgbrhFw"
+        "versionLogicalId": "GetIncidentLambdaVersion5ZRjewVqErhnKFtpZN6LQMX8uJeErgpfxp8lMPk0ezM"
       },
       "updateIncident": {
         "handler": "src/incidents/update.handler",
@@ -2656,7 +2843,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "UpdateIncidentLambdaVersionjA38T9L4sMw0XPMY74U4tFEskwxqMxmR3Dvp2C1HyKw"
+        "versionLogicalId": "UpdateIncidentLambdaVersion8OQOuVAl1rBUqBbKFHrIarl6mYropd4vgmZQf72p0"
       },
       "assignIncident": {
         "handler": "src/incidents/assign.handler",
@@ -2677,7 +2864,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "AssignIncidentLambdaVersiondMTIRypEQA2Elferu9OCecdQIbVUIDb5Y8JiR7eT8k"
+        "versionLogicalId": "AssignIncidentLambdaVersion9HaWC4lwE37eipxaCPSfPAiyvxcB8pwsMxES1AKiw"
       },
       "listWorkers": {
         "handler": "src/workers/list.handler",
@@ -2698,7 +2885,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "ListWorkersLambdaVersionAGIdFww6jhNnaQmQgZ6WMoWxoOCcSTc41Sw1jXcAo"
+        "versionLogicalId": "ListWorkersLambdaVersionMLr8fMRNPZeO6QBVbrD37SxC15nSOCYhBwk8xklRd8"
       },
       "getWorkerStats": {
         "handler": "src/workers/stats.handler",
@@ -2719,7 +2906,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "GetWorkerStatsLambdaVersiongJaF9MHwbTBUext5DGOIpBN0v4y6ShtT9Gfz9CqizAs"
+        "versionLogicalId": "GetWorkerStatsLambdaVersiond64vejM0Gm5MT8Uw3b0yY8qmaRdIYcXEalCvCiTQAs"
       },
       "updateWorkerStatus": {
         "handler": "src/workers/update_status.handler",
@@ -2740,7 +2927,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "UpdateWorkerStatusLambdaVersionxPpnaUOgffWjfGZOLg5pQvH3SONXhuxwUaGzR4XHNg"
+        "versionLogicalId": "UpdateWorkerStatusLambdaVersionOjqHc7t85wi75ZCURC29mpAOx4b0iKbBDZFHxng"
       },
       "getMetrics": {
         "handler": "src/analytics/metrics.handler",
@@ -2761,7 +2948,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "GetMetricsLambdaVersionVd4fMSwHvaGwX3a4k0ibNmzNKPNdldxqVTxPzJLVswc"
+        "versionLogicalId": "GetMetricsLambdaVersionls8aTXQs2L90O9dD7nNrpBq3pVhZqvXD1YrVpWjlHdM"
       },
       "getDashboard": {
         "handler": "src/analytics/dashboard.handler",
@@ -2782,7 +2969,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "GetDashboardLambdaVersionKoVEIRqTtrd3zShfWK6SGe7emOCL043IwKsH7kL3M"
+        "versionLogicalId": "GetDashboardLambdaVersionRtfjaPmZdULmUsedvFRCpECIoFRXJUIk5oV6O1JduI"
       },
       "connectHandler": {
         "handler": "src/websocket/connect.handler",
@@ -2800,7 +2987,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "ConnectHandlerLambdaVersion9jb0zTEslXTg8peTKUoDb0f2bmkVqeVTRky8sEW7578"
+        "versionLogicalId": "ConnectHandlerLambdaVersionfXl0ZyACMytD4MRWSrEThLACugNjkKmAG4L0VNZOBg"
       },
       "disconnectHandler": {
         "handler": "src/websocket/disconnect.handler",
@@ -2818,7 +3005,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "DisconnectHandlerLambdaVersionsBfCoz6xGwWoAk5JUBkVPUZvxvNFwFCKCkpzdoN6FQc"
+        "versionLogicalId": "DisconnectHandlerLambdaVersionwBfP78loOkTJ2SZeOHO1jcGEIhOtjhCkIcrvFRA2A"
       },
       "defaultHandler": {
         "handler": "src/websocket/default.handler",
@@ -2836,7 +3023,7 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "DefaultHandlerLambdaVersionvGci9qnK6W7ACkknWgAvB55L39JDfWp1umCf5Ay8ntU"
+        "versionLogicalId": "DefaultHandlerLambdaVersionxQcgSW4Oh2LogwDuDoLr67zVhTCsnxGvUOlrJ5c"
       },
       "broadcastHandler": {
         "handler": "src/websocket/broadcast.handler",
@@ -2848,7 +3035,28 @@
         "timeout": 6,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "BroadcastHandlerLambdaVersionMBb91E3OClKAytvuYYcHhYtgXYq4eJV4Vqg1qGpDjQ"
+        "versionLogicalId": "BroadcastHandlerLambdaVersion0Xc7a3gPnRkJ5aataLesPDbVOH3OweWWGzJ5oxiE884"
+      },
+      "subscribeAdmins": {
+        "handler": "src/notifications/sendIncidentEmail.subscribeAdminsHandler",
+        "events": [
+          {
+            "httpApi": {
+              "path": "/admin/subscribe-notifications",
+              "method": "post"
+            },
+            "resolvedMethod": "POST",
+            "resolvedPath": "/admin/subscribe-notifications"
+          }
+        ],
+        "timeout": 60,
+        "description": "Suscribir administradores a notificaciones por email (ejecutar una vez)",
+        "name": "incident-management-system-dev-subscribeAdmins",
+        "package": {},
+        "memory": 1024,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "SubscribeAdminsLambdaVersionxi0UgqpI3fmgFjkGZAdbVuLJx53yOy1rcNZGZPmrXeQ"
       }
     },
     "resources": {
@@ -3156,6 +3364,18 @@
             "Ref": "ImagesBucket"
           },
           "Description": "S3 Bucket para almacenar imágenes de incidentes"
+        },
+        "IncidentNotificationTopicArn": {
+          "Value": {
+            "Ref": "IncidentNotificationsTopic"
+          },
+          "Description": "ARN del SNS Topic para notificaciones por email"
+        },
+        "SubscribeAdminsUrl": {
+          "Value": {
+            "Fn::Sub": "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/admin/subscribe-notifications"
+          },
+          "Description": "Endpoint para suscribir administradores a notificaciones"
         }
       }
     },
@@ -3169,7 +3389,7 @@
     "artifact": "/home/ubuntu/AlertaUTEC/.serverless/incident-management-system.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/incident-management-system/dev/1763316565938-2025-11-16T18:09:25.938Z",
+    "artifactDirectoryName": "serverless/incident-management-system/dev/1763326023363-2025-11-16T20:47:03.363Z",
     "artifact": "incident-management-system.zip"
   }
 }
