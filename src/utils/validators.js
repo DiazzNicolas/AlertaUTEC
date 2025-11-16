@@ -283,6 +283,9 @@ export function getPriorityPoints(priority) {
   return priorityPoints[priority] || 2;
 }
 
+// Alias para compatibilidad
+export const validatePriorityPoints = getPriorityPoints;
+
 /**
  * Valida si el trabajador puede tomar otro incidente
  * @param {number} currentWorkload - Carga actual del trabajador
