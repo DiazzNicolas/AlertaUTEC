@@ -1,12 +1,8 @@
 /**
  * Lambda function: Registro de nuevos usuarios
  * Endpoint: POST /auth/register
- * 
- * Roles disponibles:
- * - alumno: Estudiantes que reportan incidentes
- * - worker: Personal de mantenimiento/técnico
- * - admin: Administrador del sistema
  */
+
 import { v4 as uuidv4 } from 'uuid';
 import { getUserByEmail, putItem } from '../utils/dynamodb.js';
 import { hashPassword, generateToken } from '../utils/auth.js';
@@ -34,6 +30,8 @@ const USERS_TABLE = process.env.USERS_TABLE;
  */
 export const handler = async (event) => {
   try {
+    console.log('Event:', JSON.stringify(event, null, 2));
+    
     // Parsear body
     const body = JSON.parse(event.body || '{}');
 
@@ -45,7 +43,18 @@ export const handler = async (event) => {
       });
     }
 
-    const { email, password, name, role, phone, studentCode, faculty, career, specialty, department } = body;
+    const { 
+      email, 
+      password, 
+      name, 
+      role, 
+      phone, 
+      studentCode, 
+      faculty, 
+      career, 
+      specialty, 
+      department 
+    } = body;
 
     // Verificar si el email ya existe
     const existingUser = await getUserByEmail(email.toLowerCase());
