@@ -24,16 +24,21 @@ const USERS_TABLE = process.env.USERS_TABLE;
  */
 export const handler = async (event) => {
   try {
+    console.log('=== LISTAR INCIDENTES ===');
+    
     // Verificar autenticación
     let user;
     try {
       user = requireAuth(event);
+      console.log('Usuario autenticado:', user.userId, user.role);
     } catch (error) {
+      console.error('Error de autenticación:', error.message);
       return unauthorized(error.message);
     }
 
     // Obtener query parameters
     const params = event.queryStringParameters || {};
+    console.log('Query params:', params);
     
     const status = params.status;
     const priority = params.priority;
@@ -63,6 +68,7 @@ export const handler = async (event) => {
 
     // Si es estudiante, solo ve sus propios incidentes
     if (isStudent(user)) {
+      console.log('Usuario es estudiante, obteniendo sus incidentes');
       incidentsResult = await getStudentIncidents(
         user.userId,
         status,
@@ -72,6 +78,7 @@ export const handler = async (event) => {
     }
     // Si es trabajador, ve incidentes asignados a él + pendientes
     else if (isWorker(user)) {
+      console.log('Usuario es worker, obteniendo incidentes asignados');
       if (assignedTo && assignedTo !== user.userId) {
         // Workers no pueden ver incidentes de otros workers
         assignedTo = user.userId;
@@ -89,6 +96,7 @@ export const handler = async (event) => {
     }
     // Si es admin, ve todos los incidentes con filtros
     else {
+      console.log('Usuario es admin, obteniendo todos los incidentes con filtros');
       incidentsResult = await getFilteredIncidents(
         status,
         priority,
@@ -99,6 +107,8 @@ export const handler = async (event) => {
         lastKey
       );
     }
+
+    console.log(`Incidentes encontrados: ${incidentsResult.items.length}`);
 
     // Obtener información de usuarios (reportedBy, assignedTo)
     const incidents = incidentsResult.items;
@@ -117,13 +127,17 @@ export const handler = async (event) => {
       );
     }
 
+    console.log('=== LISTADO EXITOSO ===');
     return successResponse(
       `${enrichedIncidents.length} incidente(s) encontrado(s)`,
       responseData
     );
 
   } catch (error) {
-    console.error('Error en list incidents:', error);
+    console.error('=== ERROR EN LIST INCIDENTS ===');
+    console.error('Tipo:', error.name);
+    console.error('Mensaje:', error.message);
+    console.error('Stack:', error.stack);
     return internalError('Error al listar incidentes');
   }
 };
@@ -133,16 +147,21 @@ export const handler = async (event) => {
  */
 async function getStudentIncidents(studentId, status, limit, lastKey) {
   const options = {
-    filterExpression: 'reportedBy = :studentId',
-    expressionValues: { ':studentId': studentId },
     limit,
     lastEvaluatedKey: lastKey
   };
 
+  // Construir filter expression
   if (status) {
-    options.filterExpression += ' AND #status = :status';
-    options.expressionValues[':status'] = status;
+    options.filterExpression = 'reportedBy = :studentId AND #status = :status';
+    options.expressionValues = { 
+      ':studentId': studentId,
+      ':status': status 
+    };
     options.expressionNames = { '#status': 'status' };
+  } else {
+    options.filterExpression = 'reportedBy = :studentId';
+    options.expressionValues = { ':studentId': studentId };
   }
 
   return scanItems(INCIDENTS_TABLE, options);
@@ -162,6 +181,7 @@ async function getWorkerIncidents(
 ) {
   let filterExpression = '';
   const expressionValues = {};
+  const expressionNames = { '#status': 'status' };
 
   // Si hay filtro de status específico
   if (status) {
@@ -175,7 +195,6 @@ async function getWorkerIncidents(
     }
   } else {
     // Mostrar incidentes asignados a él O pendientes
-    // En DynamoDB esto requiere un scan con filter
     filterExpression = '(assignedTo = :workerId) OR (#status = :pending)';
     expressionValues[':workerId'] = workerId;
     expressionValues[':pending'] = 'pending';
@@ -193,15 +212,14 @@ async function getWorkerIncidents(
   if (building) {
     filterExpression += ' AND #location.#building = :building';
     expressionValues[':building'] = building;
+    expressionNames['#location'] = 'location';
+    expressionNames['#building'] = 'building';
   }
 
   return scanItems(INCIDENTS_TABLE, {
     filterExpression,
     expressionValues,
-    expressionNames: { 
-      '#status': 'status',
-      ...(building && { '#location': 'location', '#building': 'building' })
-    },
+    expressionNames,
     limit,
     lastEvaluatedKey: lastKey
   });
@@ -252,35 +270,6 @@ async function getFilteredIncidents(
     return { ...result, items };
   }
 
-  // Si hay assignedTo, usar el índice AssignedToIndex
-  if (assignedTo) {
-    const result = await queryItems(
-      INCIDENTS_TABLE,
-      'assignedTo = :assignedTo',
-      { ':assignedTo': assignedTo },
-      {
-        indexName: 'AssignedToIndex',
-        limit,
-        scanForward: false,
-        lastEvaluatedKey: lastKey
-      }
-    );
-
-    // Aplicar filtros adicionales
-    let items = result.items;
-    if (priority) {
-      items = items.filter(i => i.priority === priority);
-    }
-    if (category) {
-      items = items.filter(i => i.category === category);
-    }
-    if (building) {
-      items = items.filter(i => i.location?.building === building);
-    }
-
-    return { ...result, items };
-  }
-
   // Si hay priority, usar el índice PriorityIndex
   if (priority) {
     const result = await queryItems(
@@ -310,6 +299,7 @@ async function getFilteredIncidents(
   // Si solo hay filtros simples, hacer scan
   let filterExpression = null;
   const expressionValues = {};
+  const expressionNames = {};
 
   if (category) {
     filterExpression = 'category = :category';
@@ -318,15 +308,25 @@ async function getFilteredIncidents(
   if (building) {
     const buildingFilter = '#location.#building = :building';
     expressionValues[':building'] = building;
+    expressionNames['#location'] = 'location';
+    expressionNames['#building'] = 'building';
     filterExpression = filterExpression 
       ? `${filterExpression} AND ${buildingFilter}`
       : buildingFilter;
   }
 
+  // Si no hay filtros, devolver todos los incidentes
+  if (!filterExpression) {
+    return scanItems(INCIDENTS_TABLE, {
+      limit,
+      lastEvaluatedKey: lastKey
+    });
+  }
+
   return scanItems(INCIDENTS_TABLE, {
     filterExpression,
     expressionValues,
-    expressionNames: building ? { '#location': 'location', '#building': 'building' } : undefined,
+    expressionNames: Object.keys(expressionNames).length > 0 ? expressionNames : undefined,
     limit,
     lastEvaluatedKey: lastKey
   });
@@ -355,9 +355,14 @@ async function enrichIncidentsWithUsers(incidents) {
   const users = {};
   if (userIds.size > 0) {
     const keys = Array.from(userIds).map(uid => ({ userId: uid }));
-    const userItems = await batchGetItems(USERS_TABLE, keys);
-    for (const user of userItems) {
-      users[user.userId] = user;
+    try {
+      const userItems = await batchGetItems(USERS_TABLE, keys);
+      for (const user of userItems) {
+        users[user.userId] = user;
+      }
+    } catch (error) {
+      console.error('Error obteniendo usuarios:', error);
+      // Continuar sin enriquecer si hay error
     }
   }
 
@@ -374,7 +379,14 @@ async function enrichIncidentsWithUsers(incidents) {
         userId: reporter.userId,
         name: reporter.name,
         email: reporter.email,
-        studentCode: reporter.studentCode
+        studentCode: reporter.studentCode || null
+      };
+    } else if (reportedById) {
+      // Si no se encontró el usuario, mantener solo el ID
+      enrichedIncident.reportedBy = {
+        userId: reportedById,
+        name: 'Usuario desconocido',
+        email: null
       };
     }
 
@@ -386,9 +398,18 @@ async function enrichIncidentsWithUsers(incidents) {
         userId: worker.userId,
         name: worker.name,
         email: worker.email,
-        specialty: worker.specialty,
+        specialty: worker.specialty || 'General',
         workloadPoints: worker.workloadPoints || 0
       };
+    } else if (assignedToId) {
+      enrichedIncident.assignedTo = {
+        userId: assignedToId,
+        name: 'Trabajador desconocido',
+        email: null
+      };
+    } else {
+      // Si no hay assignedTo, asegurarse de que sea null en la respuesta
+      enrichedIncident.assignedTo = null;
     }
 
     enriched.push(enrichedIncident);
