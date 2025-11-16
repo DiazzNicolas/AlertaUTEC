@@ -96,7 +96,7 @@ export const handler = async (event) => {
     }
 
     // Validar que el trabajador esté activo
-    if (worker.status !== 'active') {
+    if (worker.status === 'inactive') {
       return badRequest(
         'El trabajador está inactivo',
         { workerStatus: worker.status }
