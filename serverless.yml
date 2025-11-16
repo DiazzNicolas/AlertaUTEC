@@ -1,6 +1,7 @@
 org: nicolasdiaz
 service: incident-management-system
 
+
 provider:
   name: aws
   runtime: nodejs20.x
@@ -24,6 +25,9 @@ provider:
     
     # Stage
     STAGE: ${sls:stage}
+    
+    # ⬇️ NUEVO: SNS Topic para notificaciones por email
+    INCIDENT_NOTIFICATION_TOPIC_ARN: !Ref IncidentNotificationsTopic
 
   httpApi:
     cors:
@@ -180,6 +184,18 @@ functions:
   broadcastHandler:
     handler: src/websocket/broadcast.handler
     description: Enviar notificaciones broadcast a usuarios conectados
+
+  # ==========================================
+  # ⬇️ NUEVO: NOTIFICACIONES POR EMAIL
+  # ==========================================
+  subscribeAdmins:
+    handler: src/notifications/sendIncidentEmail.subscribeAdminsHandler
+    events:
+      - httpApi:
+          path: /admin/subscribe-notifications
+          method: post
+    timeout: 60
+    description: Suscribir administradores a notificaciones por email (ejecutar una vez)
 
 resources:
   Resources:
@@ -369,3 +385,14 @@ outputs:
   ImagesBucket:
     Value: !Ref ImagesBucket
     Description: S3 Bucket para almacenar imágenes de incidentes
+  
+  # ⬇️ NUEVO: Output del Topic ARN
+  IncidentNotificationTopicArn:
+    Value: !Ref IncidentNotificationsTopic
+    Description: ARN del SNS Topic para notificaciones por email
+  
+  # ⬇️ NUEVO: URL para suscribir administradores
+  SubscribeAdminsUrl:
+    Value:
+      Fn::Sub: "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/admin/subscribe-notifications"
+    Description: Endpoint para suscribir administradores a notificaciones
