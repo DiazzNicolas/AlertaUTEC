@@ -3,6 +3,7 @@
  * Endpoint: POST /incidents/{id}/assign
  * Requiere: Autenticación (solo admin)
  */
+import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 import { getIncidentById, getUserById, updateItem } from '../utils/dynamodb.js';
 import { requireAuth, canAssignIncident } from '../utils/auth.js';
 import { successResponse, badRequest, unauthorized, notFound, forbidden, internalError } from '../utils/responses.js';
@@ -15,6 +16,35 @@ import {
 
 const INCIDENTS_TABLE = process.env.INCIDENTS_TABLE;
 const USERS_TABLE = process.env.USERS_TABLE;
+const BROADCAST_FUNCTION = process.env.BROADCAST_FUNCTION_NAME; // Nombre de tu lambda de broadcast
+
+const lambdaClient = new LambdaClient({});
+
+/**
+ * Envía un evento WebSocket a través de la lambda de broadcast
+ */
+async function broadcastWebSocketEvent(target, targetValue, message) {
+  try {
+    const payload = {
+      action: 'broadcast',
+      target, // 'all', 'role', 'user'
+      targetValue, // 'admin', 'worker', userId, etc.
+      message
+    };
+
+    const command = new InvokeCommand({
+      FunctionName: BROADCAST_FUNCTION,
+      InvocationType: 'Event', // Asíncrono, no esperamos respuesta
+      Payload: JSON.stringify(payload)
+    });
+
+    await lambdaClient.send(command);
+    console.log('✅ Evento WebSocket enviado:', message.type);
+  } catch (error) {
+    console.error('❌ Error enviando evento WebSocket:', error);
+    // No lanzamos el error para que no falle la operación principal
+  }
+}
 
 /**
  * Asigna un trabajador a un incidente (asignación manual por admin)
@@ -95,7 +125,7 @@ export const handler = async (event) => {
       );
     }
 
-    // Validar que el trabajador esté activo
+    // Validar que el trabajador esté activo (disponible, moderate o busy)
     if (worker.status === 'inactive') {
       return badRequest(
         'El trabajador está inactivo',
@@ -156,11 +186,53 @@ export const handler = async (event) => {
 
     await updateWorkerWorkload(workerId, newWorkload, newActiveIncidents);
 
-    // TODO: Enviar notificación WebSocket al trabajador
-    // await notifyWorkerAssignment(workerId, incident);
+    // ✅ ENVIAR EVENTOS WEBSOCKET
+    try {
+      // 1. Notificar actualización del incidente (a todos)
+      const updatedIncident = {
+        ...incident,
+        incidentId,
+        assignedTo: {
+          userId: workerId,
+          name: worker.name,
+          email: worker.email
+        },
+        status: 'assigned',
+        updatedAt: currentTimestamp
+      };
 
-    // TODO: Enviar notificación al estudiante que reportó
-    // await notifyStudentAssignment(incident.reportedBy, worker, incident);
+      await broadcastWebSocketEvent('all', null, {
+        type: 'ASSIGN_INCIDENT',
+        data: updatedIncident,
+        timestamp: currentTimestamp
+      });
+
+      // 2. Notificar al worker específico
+      await broadcastWebSocketEvent('user', workerId, {
+        type: 'INCIDENT_ASSIGNED',
+        data: updatedIncident,
+        timestamp: currentTimestamp
+      });
+
+      // 3. Notificar actualización del worker (a admins)
+      await broadcastWebSocketEvent('role', 'admin', {
+        type: 'UPDATE_WORKER',
+        data: {
+          userId: workerId,
+          name: worker.name,
+          email: worker.email,
+          workloadPoints: newWorkload,
+          activeIncidents: newActiveIncidents,
+          status: getWorkerStatus(newWorkload)
+        },
+        timestamp: currentTimestamp
+      });
+
+      console.log('✅ Eventos WebSocket enviados correctamente');
+    } catch (wsError) {
+      console.error('❌ Error enviando eventos WebSocket:', wsError);
+      // No fallar la operación si WebSocket falla
+    }
 
     // Preparar respuesta
     const responseData = {

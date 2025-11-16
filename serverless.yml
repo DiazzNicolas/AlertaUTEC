@@ -20,6 +20,7 @@ provider:
     # WebSocket
     WEBSOCKET_ENDPOINT: !Sub 'https://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}'
     
+    BROADCAST_FUNCTION_NAME: ${self:service}-${self:provider.stage}-broadcast
     # JWT Secret (en producción usar SSM Parameter Store)
     JWT_SECRET: ${ssm:/incident-system/dev/jwt-secret, 'default-jwt-secret'}
     
