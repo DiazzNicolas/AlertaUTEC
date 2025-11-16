@@ -30,14 +30,26 @@ const USERS_TABLE = process.env.USERS_TABLE;
  */
 export const handler = async (event) => {
   try {
-    console.log('Event:', JSON.stringify(event, null, 2));
+    console.log('=== INICIO REGISTER ===');
+    console.log('Body recibido:', event.body);
     
     // Parsear body
-    const body = JSON.parse(event.body || '{}');
+    let body;
+    try {
+      body = JSON.parse(event.body || '{}');
+      console.log('Body parseado exitosamente:', JSON.stringify(body, null, 2));
+    } catch (parseError) {
+      console.error('Error parseando JSON:', parseError);
+      return badRequest('Formato JSON inválido');
+    }
 
     // Validar datos
+    console.log('Validando datos...');
     const validation = validateRegisterUser(body);
+    console.log('Resultado validación:', validation);
+    
     if (!validation.valid) {
+      console.log('Validación falló con errores:', validation.errors);
       return badRequest('Datos de registro inválidos', {
         errors: validation.errors
       });
@@ -57,12 +69,16 @@ export const handler = async (event) => {
     } = body;
 
     // Verificar si el email ya existe
+    console.log('Verificando si email existe:', email.toLowerCase());
     const existingUser = await getUserByEmail(email.toLowerCase());
+    
     if (existingUser) {
+      console.log('Email ya existe');
       return conflict('El correo electrónico ya está registrado', {
         email: 'Este correo ya tiene una cuenta'
       });
     }
+    console.log('Email disponible');
 
     // Generar ID único
     const userId = `usr_${uuidv4().replace(/-/g, '').substring(0, 12)}`;
@@ -101,15 +117,19 @@ export const handler = async (event) => {
     }
 
     // Guardar en DynamoDB
+    console.log('Guardando usuario en DynamoDB...');
     await putItem(USERS_TABLE, userItem);
+    console.log('Usuario guardado exitosamente');
 
     // Generar token JWT
+    console.log('Generando token JWT...');
     const token = generateToken({
       userId,
       email: userItem.email,
       role: userItem.role,
       name: userItem.name
     });
+    console.log('Token generado');
 
     // Preparar respuesta (sin contraseña)
     const responseData = {
@@ -135,14 +155,20 @@ export const handler = async (event) => {
       responseData.user.status = 'available';
     }
 
+    console.log('=== REGISTRO EXITOSO ===');
+    console.log('UserId:', userId);
     return created('Usuario registrado exitosamente', responseData);
 
   } catch (error) {
+    console.error('=== ERROR EN REGISTER ===');
+    console.error('Tipo de error:', error.name);
+    console.error('Mensaje:', error.message);
+    console.error('Stack:', error.stack);
+    
     if (error instanceof SyntaxError) {
       return badRequest('Formato JSON inválido');
     }
 
-    console.error('Error en register:', error);
     return internalError('Error al registrar usuario');
   }
 };

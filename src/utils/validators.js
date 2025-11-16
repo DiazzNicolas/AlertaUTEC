@@ -13,20 +13,28 @@
  */
 export function validateRegisterUser(data) {
   const errors = [];
+  
+  if (!data) {
+    errors.push('Datos de registro requeridos');
+    return { valid: false, errors };
+  }
+
   const { email, password, name, role, phone, studentCode, specialty } = data;
 
   // Email
   if (!email) {
     errors.push('Email es requerido');
   } else if (!validateEmailFormat(email)) {
-    errors.push('Debe usar un correo institucional (@universidad.edu.pe)');
+    errors.push('Email inválido. Debe ser un correo institucional válido');
   }
 
   // Password
   if (!password) {
     errors.push('Password es requerido');
-  } else if (password.length < 8 || password.length > 100) {
-    errors.push('Password debe tener entre 8 y 100 caracteres');
+  } else if (password.length < 8) {
+    errors.push('Password debe tener mínimo 8 caracteres');
+  } else if (password.length > 100) {
+    errors.push('Password debe tener máximo 100 caracteres');
   } else if (!validatePasswordStrength(password)) {
     errors.push('Password debe contener al menos una mayúscula, una minúscula y un número');
   }
@@ -34,8 +42,10 @@ export function validateRegisterUser(data) {
   // Name
   if (!name) {
     errors.push('Nombre es requerido');
-  } else if (name.length < 2 || name.length > 100) {
-    errors.push('Nombre debe tener entre 2 y 100 caracteres');
+  } else if (name.trim().length < 2) {
+    errors.push('Nombre debe tener al menos 2 caracteres');
+  } else if (name.length > 100) {
+    errors.push('Nombre debe tener máximo 100 caracteres');
   }
 
   // Role
@@ -46,7 +56,7 @@ export function validateRegisterUser(data) {
     errors.push('Rol inválido. Debe ser: alumno, worker o admin');
   }
 
-  // Phone (opcional)
+  // Phone (opcional, pero si existe debe ser válido)
   if (phone && !validatePhoneFormat(phone)) {
     errors.push('Formato de teléfono inválido. Debe ser +51XXXXXXXXX');
   }
@@ -73,6 +83,12 @@ export function validateRegisterUser(data) {
  */
 export function validateLogin(data) {
   const errors = [];
+  
+  if (!data) {
+    errors.push('Datos de login requeridos');
+    return { valid: false, errors };
+  }
+
   const { email, password } = data;
 
   if (!email) {
@@ -100,6 +116,12 @@ export function validateLogin(data) {
  */
 export function validateCreateIncident(data) {
   const errors = [];
+  
+  if (!data) {
+    errors.push('Datos del incidente requeridos');
+    return { valid: false, errors };
+  }
+
   const { title, description, category, priority, location, images } = data;
 
   // Title
@@ -175,7 +197,7 @@ export function validateCreateIncident(data) {
  */
 export function validateUpdateIncident(data) {
   const errors = [];
-  const { status, comment, priority } = data;
+  const { status, comment, priority } = data || {};
 
   // Status (opcional)
   if (status) {
@@ -211,7 +233,7 @@ export function validateUpdateIncident(data) {
  */
 export function validateAssignIncident(data) {
   const errors = [];
-  const { workerId } = data;
+  const { workerId } = data || {};
 
   if (!workerId || workerId.length < 1) {
     errors.push('WorkerId es requerido');
@@ -229,9 +251,6 @@ export function validateAssignIncident(data) {
 
 /**
  * Valida que la transición de estado sea válida
- * 
- * Estados permitidos: pending -> assigned -> in_progress -> resolved -> closed
- * 
  * @param {string} currentStatus - Estado actual
  * @param {string} newStatus - Nuevo estado
  * @returns {boolean} True si la transición es válida
@@ -242,7 +261,7 @@ export function validateIncidentStatusTransition(currentStatus, newStatus) {
     assigned: ['in_progress', 'pending'],
     in_progress: ['resolved', 'assigned'],
     resolved: ['closed', 'in_progress'],
-    closed: [] // No se puede cambiar desde cerrado
+    closed: []
   };
 
   const allowed = validTransitions[currentStatus] || [];
@@ -251,11 +270,10 @@ export function validateIncidentStatusTransition(currentStatus, newStatus) {
 
 /**
  * Retorna los puntos de carga según la prioridad
- * 
  * @param {string} priority - Prioridad del incidente
  * @returns {number} Puntos de carga
  */
-export function validatePriorityPoints(priority) {
+export function getPriorityPoints(priority) {
   const priorityPoints = {
     low: 1,
     medium: 2,
@@ -267,25 +285,32 @@ export function validatePriorityPoints(priority) {
 
 /**
  * Valida si el trabajador puede tomar otro incidente
- * 
  * @param {number} currentWorkload - Carga actual del trabajador
  * @param {string} incidentPriority - Prioridad del nuevo incidente
  * @param {number} maxWorkload - Carga máxima permitida (default: 20)
  * @returns {boolean} True si puede tomar el incidente
  */
 export function validateWorkerCapacity(currentWorkload, incidentPriority, maxWorkload = 20) {
-  const newPoints = validatePriorityPoints(incidentPriority);
+  const newPoints = getPriorityPoints(incidentPriority);
   return (currentWorkload + newPoints) <= maxWorkload;
 }
 
 /**
- * Valida formato de email universitario
+ * Valida formato de email
+ * Acepta dominios .edu.pe comunes
  * @param {string} email - Email a validar
  * @returns {boolean}
  */
 export function validateEmailFormat(email) {
-  const pattern = /^[a-zA-Z0-9._%+-]+@universidad\.edu\.pe$/;
-  return pattern.test(email);
+  if (!email) return false;
+  
+  // Validación básica de email
+  const basicPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!basicPattern.test(email)) return false;
+  
+  // Debe ser un dominio educativo peruano
+  const eduPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.edu\.pe$/i;
+  return eduPattern.test(email);
 }
 
 /**
@@ -294,18 +319,22 @@ export function validateEmailFormat(email) {
  * @returns {boolean}
  */
 export function validatePhoneFormat(phone) {
+  if (!phone) return false;
+  
+  // Debe empezar con +51 seguido de 9 dígitos
   const pattern = /^\+51\d{9}$/;
   return pattern.test(phone);
 }
 
 /**
  * Valida formato de código de estudiante
- * Formato: 10 dígitos (año + código)
+ * Formato flexible: acepta códigos de 4 a 15 caracteres alfanuméricos
  * @param {string} code - Código a validar
  * @returns {boolean}
  */
 export function validateStudentCode(code) {
-  const pattern = /^\d{10}$/;
+  if (!code) return false;
+  const pattern = /^[a-zA-Z0-9]{4,15}$/;
   return pattern.test(code);
 }
 
@@ -316,6 +345,8 @@ export function validateStudentCode(code) {
  * @returns {boolean}
  */
 export function validatePasswordStrength(password) {
+  if (!password) return false;
+  
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
@@ -325,17 +356,19 @@ export function validatePasswordStrength(password) {
 
 /**
  * Sanitiza un string eliminando caracteres peligrosos
- * 
  * @param {string} text - Texto a sanitizar
  * @returns {string} Texto sanitizado
  */
 export function sanitizeString(text) {
   if (!text) return '';
 
-  // Remover caracteres de control (excepto saltos de línea)
+  // Convertir a string si no lo es
+  text = String(text);
+
+  // Remover caracteres de control (excepto saltos de línea y tabs)
   let sanitized = text.split('').filter(char => {
     const code = char.charCodeAt(0);
-    return code >= 32 || char === '\n';
+    return code >= 32 || char === '\n' || char === '\t';
   }).join('');
 
   // Limitar longitud
@@ -346,7 +379,6 @@ export function sanitizeString(text) {
 
 /**
  * Determina el estado del trabajador según su carga
- * 
  * @param {number} workloadPoints - Puntos de carga actual
  * @returns {string} Estado: available, moderate o busy
  */
@@ -367,7 +399,7 @@ export function getWorkerStatus(workloadPoints) {
  */
 export function validateIncidentQueryParams(params) {
   const errors = [];
-  const { status, priority, category, limit } = params;
+  const { status, priority, category, limit } = params || {};
 
   if (status) {
     const validStatuses = ['pending', 'assigned', 'in_progress', 'resolved', 'closed'];
@@ -420,7 +452,7 @@ export function validateIncidentQueryParams(params) {
  */
 export function validateWorkerQueryParams(params) {
   const errors = [];
-  const { status, sortBy, order, limit } = params;
+  const { status, sortBy, order, limit } = params || {};
 
   if (status) {
     const validStatuses = ['available', 'moderate', 'busy'];
