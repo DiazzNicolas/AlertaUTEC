@@ -1,4 +1,4 @@
-org: tuorganizacion
+org: nicolasdiaz
 service: incident-management-system
 
 provider:
@@ -6,7 +6,7 @@ provider:
   runtime: python3.13
   region: us-east-1
   iam:
-    role: arn:aws:iam::730872172556:role/LabRole
+    role: arn:aws:iam::895179168118:role/LabRole
   environment:
     # Tablas DynamoDB
     USERS_TABLE: ${sls:stage}_t_usuarios
