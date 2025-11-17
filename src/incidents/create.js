@@ -171,6 +171,42 @@ export const handler = async (event) => {
     const incidentId = `inc_${uuidv4().replace(/-/g, '').substring(0, 12)}`;
     const currentTimestamp = Date.now();
 
+    // Construir el objeto location con los nuevos campos
+    const locationData = {
+      building: sanitizeString(location.building),
+      floor: location.floor,
+    };
+
+    // Si es "otro", usar otherBuilding como el nombre del edificio
+    if (location.building === 'otro' && location.otherBuilding) {
+      locationData.building = sanitizeString(location.otherBuilding);
+    }
+
+    // Si es edificio principal o nuevo edificio, guardar roomType y roomNumber
+    if (location.building === 'edificio-principal' || location.building === 'nuevo-edificio') {
+      if (location.roomType === 'pabellon-corredor') {
+        locationData.roomType = 'pabellon-corredor';
+        locationData.room = location.room ? sanitizeString(location.room) : 'Pabellón/Corredor';
+      } else if (location.roomType && location.roomNumber) {
+        locationData.roomType = location.roomType;
+        locationData.roomNumber = location.roomNumber;
+        locationData.room = sanitizeString(location.roomType + location.roomNumber);
+      } else if (location.room) {
+        // Compatibilidad con formato anterior
+        locationData.room = sanitizeString(location.room);
+      }
+    } else {
+      // Para otros edificios, solo guardar room
+      if (location.room) {
+        locationData.room = sanitizeString(location.room);
+      }
+    }
+
+    // Agregar ubicación específica si existe
+    if (location.specificLocation) {
+      locationData.specificLocation = sanitizeString(location.specificLocation);
+    }
+
     const incidentItem = {
       incidentId,
       title: sanitizeString(title),
@@ -178,14 +214,7 @@ export const handler = async (event) => {
       category,
       priority,
       status: 'pending',
-      location: {
-        building: sanitizeString(location.building),
-        floor: location.floor,
-        room: sanitizeString(location.room),
-        specificLocation: location.specificLocation
-          ? sanitizeString(location.specificLocation)
-          : null
-      },
+      location: locationData,
       images: [],
       reportedBy: user.userId,
       createdAt: currentTimestamp,

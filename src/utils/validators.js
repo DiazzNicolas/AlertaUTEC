@@ -168,14 +168,71 @@ export function validateCreateIncident(data) {
   if (!location) {
     errors.push('Ubicación es requerida');
   } else {
-    if (!location.building || location.building.length < 1 || location.building.length > 100) {
-      errors.push('Edificio debe tener entre 1 y 100 caracteres');
+    // Validar edificio/pabellón
+    const validBuildings = [
+      'edificio-principal',
+      'nuevo-edificio',
+      'auditorio',
+      'aula-magna',
+      'cancha-deportiva',
+      'foyer',
+      'otro'
+    ];
+    if (!location.building) {
+      errors.push('Edificio/Pabellón es requerido');
+    } else if (!validBuildings.includes(location.building)) {
+      errors.push('Edificio/Pabellón inválido');
+    } else if (location.building === 'otro') {
+      // Si es "otro", debe tener un campo "otherBuilding" con el valor
+      if (!location.otherBuilding || location.otherBuilding.trim().length < 1) {
+        errors.push('Debe especificar el nombre del edificio/pabellón');
+      } else if (location.otherBuilding.length > 100) {
+        errors.push('Nombre del edificio/pabellón debe tener máximo 100 caracteres');
+      }
     }
-    if (location.floor === undefined || location.floor < 0 || location.floor > 20) {
-      errors.push('Piso debe estar entre 0 y 20');
+    
+    // Validar piso: debe estar entre -2 y 11
+    if (location.floor === undefined || location.floor < -2 || location.floor > 11) {
+      errors.push('Piso debe estar entre -2 y 11');
     }
-    if (!location.room || location.room.length < 1 || location.room.length > 50) {
-      errors.push('Sala/Ambiente debe tener entre 1 y 50 caracteres');
+    
+    // Validar sala/ambiente
+    // Si es edificio principal o nuevo edificio, puede tener sala o pabellón/corredor
+    if (location.building === 'edificio-principal' || location.building === 'nuevo-edificio') {
+      // Puede ser un salón (con tipo L, M, A, E y números) o pabellón/corredor
+      if (location.roomType === 'pabellon-corredor') {
+        // Si es pabellón/corredor, no necesita número de salón
+        if (!location.room || location.room.trim().length < 1) {
+          errors.push('Debe especificar el pabellón/corredor');
+        }
+      } else {
+        // Es un salón, debe tener tipo y número
+        const validRoomTypes = ['L', 'M', 'A', 'E'];
+        if (!location.roomType || !validRoomTypes.includes(location.roomType)) {
+          errors.push('Tipo de salón es requerido (L, M, A, E)');
+        }
+        if (!location.roomNumber || location.roomNumber.length < 1 || location.roomNumber.length > 4) {
+          errors.push('Número de salón es requerido y debe tener máximo 4 dígitos');
+        }
+        // Validar que roomNumber solo contenga números
+        if (location.roomNumber && !/^\d{1,4}$/.test(location.roomNumber)) {
+          errors.push('Número de salón debe contener solo números (máximo 4 dígitos)');
+        }
+      }
+    } else if (location.building === 'otro') {
+      // Para "otro", también necesita un campo de texto libre para sala/ambiente
+      if (!location.room || location.room.trim().length < 1) {
+        errors.push('Sala/Ambiente es requerido');
+      } else if (location.room.length > 50) {
+        errors.push('Sala/Ambiente debe tener máximo 50 caracteres');
+      }
+    } else {
+      // Para otros edificios (auditorio, aula magna, etc.), solo necesita un campo de texto libre
+      if (!location.room || location.room.trim().length < 1) {
+        errors.push('Sala/Ambiente es requerido');
+      } else if (location.room.length > 50) {
+        errors.push('Sala/Ambiente debe tener máximo 50 caracteres');
+      }
     }
   }
 
