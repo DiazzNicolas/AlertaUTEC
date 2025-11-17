@@ -63,50 +63,19 @@ export const handler = async (event) => {
       }
     }
 
-    // Determinar qué incidentes puede ver el usuario
+    // Todos los usuarios pueden ver todos los incidentes con filtros
     let incidentsResult;
-
-    // Si es estudiante, solo ve sus propios incidentes
-    if (isStudent(user)) {
-      console.log('Usuario es estudiante, obteniendo sus incidentes');
-      incidentsResult = await getStudentIncidents(
-        user.userId,
-        status,
-        limit,
-        lastKey
-      );
-    }
-    // Si es trabajador, ve incidentes asignados a él + pendientes
-    else if (isWorker(user)) {
-      console.log('Usuario es worker, obteniendo incidentes asignados');
-      if (assignedTo && assignedTo !== user.userId) {
-        // Workers no pueden ver incidentes de otros workers
-        assignedTo = user.userId;
-      }
-
-      incidentsResult = await getWorkerIncidents(
-        user.userId,
-        status,
-        priority,
-        category,
-        building,
-        limit,
-        lastKey
-      );
-    }
-    // Si es admin, ve todos los incidentes con filtros
-    else {
-      console.log('Usuario es admin, obteniendo todos los incidentes con filtros');
-      incidentsResult = await getFilteredIncidents(
-        status,
-        priority,
-        category,
-        assignedTo,
-        building,
-        limit,
-        lastKey
-      );
-    }
+    
+    console.log('Obteniendo todos los incidentes con filtros para usuario:', user.role);
+    incidentsResult = await getFilteredIncidents(
+      status,
+      priority,
+      category,
+      assignedTo,
+      building,
+      limit,
+      lastKey
+    );
 
     console.log(`Incidentes encontrados: ${incidentsResult.items.length}`);
 
