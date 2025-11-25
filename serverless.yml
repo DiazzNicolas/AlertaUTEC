@@ -15,7 +15,7 @@ provider:
     CONNECTIONS_TABLE: ${sls:stage}_t_conexiones
     
     # S3 Bucket para imágenes
-    IMAGES_BUCKET: dev-incidents-image-bucket
+    IMAGES_BUCKET: ${sls:stage}-incident-images-bucket-992382662176
     
     # WebSocket
     WEBSOCKET_ENDPOINT: !Sub 'https://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}'
