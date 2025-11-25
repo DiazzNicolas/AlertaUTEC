@@ -1,4 +1,4 @@
-org: lucenyx
+org: nicolasdiaz
 service: incident-management-system
 
 
@@ -15,7 +15,7 @@ provider:
     CONNECTIONS_TABLE: ${sls:stage}_t_conexiones
     
     # S3 Bucket para imágenes
-    IMAGES_BUCKET: ${sls:stage}-incident-images-bucket
+    IMAGES_BUCKET: dev-incidents-image-bucket
     
     # WebSocket
     WEBSOCKET_ENDPOINT: !Sub 'https://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${sls:stage}'
