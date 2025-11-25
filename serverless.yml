@@ -7,7 +7,7 @@ provider:
   runtime: nodejs20.x
   region: us-east-1
   iam:
-    role: arn:aws:iam::895179168118:role/LabRole
+    role: arn:aws:iam::992382662176:role/LabRole
   environment:
     # Tablas DynamoDB
     USERS_TABLE: ${sls:stage}_t_usuarios
@@ -356,7 +356,7 @@ resources:
           Statement:
             - Effect: Allow
               Principal:
-                AWS: arn:aws:iam::895179168118:role/LabRole
+                AWS: arn:aws:iam::992382662176:role/LabRole
               Action:
                 - s3:GetObject
                 - s3:PutObject
